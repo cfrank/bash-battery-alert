@@ -1,8 +1,21 @@
 #!/bin/bash
 
+#
 # Script which will be cron'd to my machine
 # every few minutes to alert me of low battery
 # level without having to use a GUI
+#
+
+# Obtain DBUS_SESSION_BUS_ADDRESS - This is used
+# because without it the cron job will fail to
+# use notify-send because it's running as root and
+# doesn't have access to it.
+# - - -
+# Use tint2 process because it's always running on
+# my machine.
+PID=$(pgrep tint2)
+dbus=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$PID/environ|cut -d= -f2-)
+export DBUS_SESSION_BUS_ADDRESS=$dbus
 
 # We are using /sys/class/power_supply/ because
 # it's more reliable on my machine
@@ -15,7 +28,7 @@ battery="BAT0"
 path=$file$battery
 
 # The percentage at which we alert the user
-ALERT_PERC=15
+ALERT_PERC=100
 
 #
 # Get Charge Information
@@ -44,9 +57,10 @@ bat_status=$(cat $path"/status")
 #
 # Check for low battery & check for battery status.
 # If battery is below ALERT_PEC and the battery is
-# not charging, than send user a notification
+# not charging, than send user a notification. Use
+# a 'while' loop to run the code over and over, and
+# use a sleep statement to only do this every 3 min.
 #
-
 if [ "$perc" -lt "$ALERT_PERC" ]; then
     if [ "$bat_status" == "Discharging" ]; then
         notify-send "<b>Alert!!</b>" "Battery is currently ${perc}%!"
