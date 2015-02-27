@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Script which will be cron'd to my machine
+# every few minutes to alert me of low battery
+# level without having to use a GUI
+
+# We are using /sys/class/power_supply/ because
+# it's more reliable on my machine
+file="/sys/class/power_supply/"
+
+# My battery is BAT0
+battery="BAT0"
+
+# The full path file+battery
+path=$file$battery
+
+# The percentage at which we alert the user
+ALERT_PERC=15
+
+#
+# Get Charge Information
+#
+
+# Get current battery charge
+typeset -i charge_now=$(cat $path"/charge_now")
+
+# Get full battery charge
+typeset -i charge_full=$(cat $path"/charge_full")
+
+# Get the difference of the current vs the full
+# charge
+dif=$((charge_full - charge_now))
+
+# Finally get the percent charged
+perc=$((100-(100*dif/charge_full)))
+
+#
+# Get battery status
+#
+
+# Get status (Charging / Discharging)
+bat_status=$(cat $path"/status")
+
+#
+# Check for low battery & check for battery status.
+# If battery is below 10% and the battery is not
+# charging, than send user a notification
+#
+
+if [ "$perc" -lt "$ALERT_PERC" ]; then
+    if [ "$bat_status" == "Discharging" ]; then
+        notify-send "<b>Alert!!</b>" "Battery is currently ${perc}%!"
+    fi
+fi
