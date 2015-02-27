@@ -28,7 +28,7 @@ battery="BAT0"
 path=$file$battery
 
 # The percentage at which we alert the user
-ALERT_PERC=100
+ALERT_PERC=15
 
 #
 # Get Charge Information
