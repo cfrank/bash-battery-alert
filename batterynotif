@@ -43,8 +43,8 @@ bat_status=$(cat $path"/status")
 
 #
 # Check for low battery & check for battery status.
-# If battery is below 10% and the battery is not
-# charging, than send user a notification
+# If battery is below ALERT_PEC and the battery is
+# not charging, than send user a notification
 #
 
 if [ "$perc" -lt "$ALERT_PERC" ]; then
